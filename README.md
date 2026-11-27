@@ -59,7 +59,7 @@ Outputs: `eval-results/summary.md` (the PR comment), `eval-results/results.json`
 | `ticket/SupportService.java` | The guarded pipeline: input guards, model call, output guards, repair loop, fallback |
 | `ticket/TicketTriage.java` | The structured output contract (records + Bean Validation) |
 | `guardrail/` | 3 input guardrails, 4 output guardrails, all plain Java with unit tests |
-| `src/main/resources/prompts/support-v*.txt` | Versioned prompts. v1 = main, v2 = the "friendlier" PR, v3 = the fix |
+| `src/main/resources/prompts/support-v*.txt` | Versioned prompts. v1 = main, v2 = the "fewer escalations" PR, v3 = the fix |
 | `src/main/resources/policy/refund-policy.md` | The business policy, shared by the prompt and the judge |
 | `evals/datasets/golden.json` | 16 everyday tickets with expected triage + reference replies |
 | `evals/datasets/redteam.json` | 12 attacks: 5 must be blocked at the door, 7 must pass through without anything unsafe shipping |
@@ -80,7 +80,7 @@ Outputs: `eval-results/summary.md` (the PR comment), `eval-results/results.json`
 | `first_pass_compliance` | 85% | How often the model was right *without* a guardrail stepping in |
 | `reply_quality` | 80% | LLM judge score ≥ 4/5 |
 | p95 latency | ≤ 20 s | |
-| regressions | none | A case that mostly passed on the baseline and now mostly fails blocks the merge |
+| regressions | none | A case that passed in every baseline trial and now mostly fails blocks the merge (cases already flaky on the baseline are reported, not blocking) |
 
 ## Set up the pipeline on GitHub
 
@@ -89,12 +89,12 @@ Outputs: `eval-results/summary.md` (the PR comment), `eval-results/results.json`
 3. Replace `YOUR_GITHUB_USERNAME` in `.github/CODEOWNERS` so prompt, policy and dataset changes need an AI owner's review.
 4. On main, run `SAVE_BASELINE=true ./run-evals.sh` and commit `evals/baseline.json`. Re-baseline whenever a PR deliberately changes behaviour.
 
-## Real results (Claude Haiku 5.5 app, Claude Sonnet 5.5 judge, 3 trials, 2026-11-15)
+## Real results (Claude Haiku 5.5 app, Claude Sonnet 5.5 judge, 3 trials, 2026-11-27)
 
 | Prompt | Gate | Notes |
 |---|---|---|
-| v1 (main) | ✅ | Baseline. 4 flaky cases at 67% |
-| v2 "be customer-obsessed" | ❌ | Every metric above its threshold, category even **up** 7 points, but 2 cases regressed: `refund-day-31-boundary` started escalating, `angry-customer-refund` jumped to HIGH |
+| v1 (main) | ✅ | Baseline. 100% on every decision metric after the policy clarifications |
+| v2 "fewer escalations" | ❌ | Safety 100%, category/priority/refund 100%, but escalation 88% (gate 90%) and 2 regressions: `enterprise-outage` and `legal-threat` stopped escalating (3/3 trials) |
 | v3 "warm tone, strict decisions" | ✅ | No regressions, escalation 100% |
 
 ## Swapping in heavier tools
