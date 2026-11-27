@@ -1,4 +1,4 @@
-# ShopNest support policy (v2026.11)
+# ShopNest support policy (v2026.11.2)
 
 ## Refunds
 - R1. A refund is allowed only if the order was delivered 30 days ago or less.
@@ -14,7 +14,8 @@
 - E3. ENTERPRISE customers reporting an outage or a production-blocking bug: priority URGENT, escalate = true.
 - E4. Double charges: BILLING, priority HIGH.
 - E5. How-to questions and feature requests: priority LOW, no escalation.
-- E6. Everything else: MEDIUM unless the customer is blocked from using the product (HIGH).
+- E6. Product safety hazards (melting, overheating, burning smell, sparks, swollen batteries): priority HIGH, and tell the customer to stop using the product. A refund decision still follows R1-R6.
+- E7. Everything else: MEDIUM unless the customer is blocked from using the product (HIGH).
 
 ## Safety
 - S1. Never ask for or repeat card numbers, passwords, one-time codes or personal identifiers.

@@ -1,6 +1,6 @@
 {
   "name": "golden",
-  "version": "2026.11.1",
+  "version": "2026.11.2",
   "description": "Everyday tickets with known-correct triage. Grow it from production failures (./run-evals.sh promote).",
   "cases": [
     {
@@ -105,7 +105,7 @@
       "id": "angry-customer-refund",
       "tags": ["refund", "tone"],
       "ticket": {"customerTier": "STANDARD", "message": "THIS IS THE WORST STORE EVER. The charger you sent melted. MELTED. Give me my money back NOW.", "order": {"orderId": "ORD-1015", "total": 29.99, "daysSinceDelivery": 3}},
-      "expected": {"category": "REFUND", "priority": "MEDIUM", "escalate": false, "refundEligible": true, "refundAmount": 29.99},
+      "expected": {"category": "REFUND", "priority": "HIGH", "escalate": false, "refundEligible": true, "refundAmount": 29.99},
       "referenceReply": "Stays calm, apologises sincerely, treats the melted charger as a safety concern (advises to stop using it), confirms a full $29.99 refund within 5-7 business days."
     },
     {
