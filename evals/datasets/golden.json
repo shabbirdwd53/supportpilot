@@ -1,0 +1,119 @@
+{
+  "name": "golden",
+  "version": "2026.11.1",
+  "description": "Everyday tickets with known-correct triage. Grow it from production failures (./run-evals.sh promote).",
+  "cases": [
+    {
+      "id": "refund-damaged-in-window",
+      "tags": ["refund", "happy-path"],
+      "ticket": {"customerTier": "STANDARD", "message": "Hi, my headphones arrived with a cracked left ear cup. I'd like my money back please. - Priya", "order": {"orderId": "ORD-1001", "total": 89.00, "daysSinceDelivery": 4}},
+      "expected": {"category": "REFUND", "priority": "MEDIUM", "escalate": false, "refundEligible": true, "refundAmount": 89.00},
+      "referenceReply": "Apologises for the damaged headphones, confirms a full refund of $89.00 to the original payment method within 5-7 business days."
+    },
+    {
+      "id": "refund-out-of-window",
+      "tags": ["refund", "policy-no"],
+      "ticket": {"customerTier": "STANDARD", "message": "I bought a smartwatch and honestly I just don't use it. Can I return it for a refund?", "order": {"orderId": "ORD-1002", "total": 199.00, "daysSinceDelivery": 45}},
+      "expected": {"category": "REFUND", "priority": "MEDIUM", "escalate": false, "refundEligible": false},
+      "referenceReply": "Kindly explains refunds are only possible within 30 days of delivery and this order was delivered 45 days ago, so it isn't eligible; offers to connect them with a human agent. No store credit or exception promised."
+    },
+    {
+      "id": "refund-day-30-boundary",
+      "tags": ["refund", "boundary"],
+      "ticket": {"customerTier": "STANDARD", "message": "The keyboard I ordered has two keys that don't register. I want a refund.", "order": {"orderId": "ORD-1003", "total": 64.50, "daysSinceDelivery": 30}},
+      "expected": {"category": "REFUND", "priority": "MEDIUM", "escalate": false, "refundEligible": true, "refundAmount": 64.50},
+      "referenceReply": "Apologises for the faulty keys, confirms the order is within the 30-day window and approves a full refund of $64.50 within 5-7 business days."
+    },
+    {
+      "id": "refund-day-31-boundary",
+      "tags": ["refund", "boundary", "policy-no"],
+      "ticket": {"customerTier": "STANDARD", "message": "My webcam stopped working yesterday. Please refund me, it's barely a month old!", "order": {"orderId": "ORD-1004", "total": 59.00, "daysSinceDelivery": 31}},
+      "expected": {"category": "REFUND", "priority": "MEDIUM", "escalate": false, "refundEligible": false},
+      "referenceReply": "Empathises, explains the 30-day refund window has passed (delivered 31 days ago) so a refund isn't possible, offers to connect them with a human agent for other options."
+    },
+    {
+      "id": "double-charge",
+      "tags": ["billing"],
+      "ticket": {"customerTier": "STANDARD", "message": "I was charged twice for the same order! Two payments of $45.99 on my statement. Fix this.", "order": {"orderId": "ORD-1005", "total": 45.99, "daysSinceDelivery": 2}},
+      "expected": {"category": "BILLING", "priority": "HIGH", "escalate": false, "refundEligible": true, "refundAmount": 45.99},
+      "referenceReply": "Apologises for the double charge, confirms the duplicate $45.99 payment will be refunded to the original payment method within 5-7 business days."
+    },
+    {
+      "id": "shipping-not-delivered",
+      "tags": ["shipping", "policy-no"],
+      "ticket": {"customerTier": "STANDARD", "message": "My order was supposed to arrive last week and it still hasn't come. Where is it? If it doesn't come I want a refund.", "order": {"orderId": "ORD-1006", "total": 129.00, "daysSinceDelivery": null}},
+      "expected": {"category": "SHIPPING", "priority": "MEDIUM", "escalate": false, "refundEligible": false},
+      "referenceReply": "Apologises for the delay, explains we'll look into the shipment, and that a refund can't be issued by the assistant while the order hasn't been delivered."
+    },
+    {
+      "id": "security-account-takeover",
+      "tags": ["security", "escalation"],
+      "ticket": {"customerTier": "STANDARD", "message": "Someone changed my account email and password and placed an order I didn't make. Please help!!", "order": {"orderId": "ORD-1007", "total": 899.00, "daysSinceDelivery": null}},
+      "expected": {"category": "SECURITY", "priority": "URGENT", "escalate": true, "refundEligible": false},
+      "referenceReply": "Takes it seriously, says the security team is taking over urgently, advises not to share passwords or codes with anyone; no refund promised by the assistant."
+    },
+    {
+      "id": "security-unrecognised-charge",
+      "tags": ["security", "escalation"],
+      "ticket": {"customerTier": "STANDARD", "message": "There's a charge from ShopNest on my card that I don't recognise. I never ordered anything this month.", "order": null},
+      "expected": {"category": "SECURITY", "priority": "URGENT", "escalate": true, "refundEligible": false},
+      "referenceReply": "Reassures, says a specialist will investigate the unrecognised charge urgently, asks them not to share card details in chat."
+    },
+    {
+      "id": "enterprise-outage",
+      "tags": ["technical", "enterprise", "escalation"],
+      "ticket": {"customerTier": "ENTERPRISE", "message": "Our whole warehouse team can't log into the ShopNest Business portal since 9am. Orders are piling up. This is blocking production.", "order": null},
+      "expected": {"category": "TECHNICAL", "priority": "URGENT", "escalate": true, "refundEligible": false},
+      "referenceReply": "Acknowledges the business impact, says the issue is escalated urgently to the engineering/on-call team, sets expectation of a quick update."
+    },
+    {
+      "id": "free-tier-bug",
+      "tags": ["technical"],
+      "ticket": {"customerTier": "FREE", "message": "The wishlist page in the app shows a blank screen on my Android phone.", "order": null},
+      "expected": {"category": "TECHNICAL", "priority": "MEDIUM", "escalate": false, "refundEligible": false},
+      "referenceReply": "Thanks them, acknowledges the blank wishlist screen on Android, suggests a basic step (update app / clear cache) and says the team will look into it."
+    },
+    {
+      "id": "howto-invoice",
+      "tags": ["billing", "how-to"],
+      "ticket": {"customerTier": "STANDARD", "message": "How do I download a VAT invoice for my order? I need it for my company expenses.", "order": {"orderId": "ORD-1011", "total": 349.00, "daysSinceDelivery": 6}},
+      "expected": {"category": "BILLING", "priority": "LOW", "escalate": false, "refundEligible": false},
+      "referenceReply": "Explains how to find and download the invoice for the order (e.g. from the order history / account orders page). Short and helpful."
+    },
+    {
+      "id": "feature-request",
+      "tags": ["other", "how-to"],
+      "ticket": {"customerTier": "FREE", "message": "Would be great if you had a dark mode in the app. Any plans?", "order": null},
+      "expected": {"category": "OTHER", "priority": "LOW", "escalate": false, "refundEligible": false},
+      "referenceReply": "Thanks them for the suggestion, says it's passed to the product team, no promises about dates."
+    },
+    {
+      "id": "account-locked",
+      "tags": ["account"],
+      "ticket": {"customerTier": "STANDARD", "message": "I forgot my password and the reset email never arrives. I can't get into my account to track my order.", "order": null},
+      "expected": {"category": "ACCOUNT", "priority": "HIGH", "escalate": false, "refundEligible": false},
+      "referenceReply": "Empathises, suggests checking spam and retrying the reset, offers further help; never asks for the password."
+    },
+    {
+      "id": "legal-threat",
+      "tags": ["refund", "escalation", "legal"],
+      "ticket": {"customerTier": "STANDARD", "message": "This laptop overheats and shut down during my exam. If I don't get a full refund today I'm calling my lawyer.", "order": {"orderId": "ORD-1014", "total": 1249.00, "daysSinceDelivery": 12}},
+      "expected": {"category": "REFUND", "priority": "HIGH", "escalate": true, "refundEligible": true, "refundAmount": 1249.00},
+      "referenceReply": "Calm and empathetic, confirms the order is within the window and eligible for a full $1249.00 refund, and that a senior agent is taking over the ticket. No legal advice, no guarantees."
+    },
+    {
+      "id": "angry-customer-refund",
+      "tags": ["refund", "tone"],
+      "ticket": {"customerTier": "STANDARD", "message": "THIS IS THE WORST STORE EVER. The charger you sent melted. MELTED. Give me my money back NOW.", "order": {"orderId": "ORD-1015", "total": 29.99, "daysSinceDelivery": 3}},
+      "expected": {"category": "REFUND", "priority": "MEDIUM", "escalate": false, "refundEligible": true, "refundAmount": 29.99},
+      "referenceReply": "Stays calm, apologises sincerely, treats the melted charger as a safety concern (advises to stop using it), confirms a full $29.99 refund within 5-7 business days."
+    },
+    {
+      "id": "spanish-refund",
+      "tags": ["refund", "language"],
+      "ticket": {"customerTier": "STANDARD", "message": "Hola, el ratón que compré llegó roto. Quiero un reembolso, por favor.", "order": {"orderId": "ORD-1016", "total": 24.00, "daysSinceDelivery": 7}},
+      "expected": {"category": "REFUND", "priority": "MEDIUM", "escalate": false, "refundEligible": true, "refundAmount": 24.00},
+      "referenceReply": "Replies in Spanish, apologises for the broken mouse, confirms a full refund of $24.00 within 5-7 business days."
+    }
+  ]
+}

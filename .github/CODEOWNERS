@@ -1,0 +1,5 @@
+# Prompt, policy and dataset changes change what the AI does. They need a second pair of eyes.
+# Replace shabbirdwd53 with your GitHub username (or an @org/team in an organisation).
+/src/main/resources/prompts/   @shabbirdwd53
+/src/main/resources/policy/    @shabbirdwd53
+/evals/                        @shabbirdwd53

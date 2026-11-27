@@ -1,0 +1,104 @@
+# Tier 2: pull requests that touch AI behaviour. Runs the real eval suite against a real model,
+# compares with evals/baseline.json, posts the scoreboard on the PR and fails the check if a gate fails.
+# Make "evals" a REQUIRED status check in branch protection, so a red run blocks the merge.
+#
+# The workflow runs on EVERY pull request, and decides by itself whether the LLM evals are needed.
+# (A `paths:` filter on the trigger would leave a required check "waiting" forever on README-only PRs.)
+name: ai-evals
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      prompt_version:
+        description: 'Prompt version to evaluate (blank = application.yml)'
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ai-evals-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true   # a new push makes the old eval run pointless, and it costs tokens
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AI_PROVIDER: anthropic
+      ANTHROPIC_MODEL: claude-haiku-5-5        # app under test: small, fast, cheap
+      JUDGE_PROVIDER: anthropic
+      JUDGE_MODEL: claude-sonnet-5-5           # judge: a stronger model
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      PROMPT_VERSION: ${{ inputs.prompt_version }}
+      TRIALS: '3'                              # LLMs are noisy: judge each case on 3 runs, not 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Did this PR change AI behaviour?
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            ai:
+              - 'src/main/resources/prompts/**'
+              - 'src/main/resources/policy/**'
+              - 'src/main/resources/application.yml'
+              - 'src/main/java/**'
+              - 'evals/**'
+              - 'pom.xml'
+
+      - name: Decide whether to run
+        id: decide
+        run: |
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ "${{ steps.changes.outputs.ai }}" != "true" ]; then
+            echo "No prompt, policy, code or dataset changes: LLM evals skipped." >> "$GITHUB_STEP_SUMMARY"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          elif [ -z "$ANTHROPIC_API_KEY" ]; then
+            # Pull requests from forks never receive secrets. Nothing to spend, nothing to leak.
+            echo "No ANTHROPIC_API_KEY available (fork PR?): LLM evals skipped. A maintainer re-runs them on a branch." >> "$GITHUB_STEP_SUMMARY"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-java@v4
+        if: steps.decide.outputs.run == 'true'
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Run eval suite (golden + red-team)
+        id: evals
+        if: steps.decide.outputs.run == 'true'
+        continue-on-error: true   # we still want to post the report when the gate fails
+        run: |
+          [ -z "$PROMPT_VERSION" ] && unset PROMPT_VERSION
+          ./run-evals.sh
+
+      - name: Job summary
+        if: always() && steps.decide.outputs.run == 'true'
+        run: cat eval-results/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on the PR
+        if: always() && github.event_name == 'pull_request' && steps.decide.outputs.run == 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: supportpilot-evals
+          path: eval-results/summary.md
+
+      - name: Upload results
+        if: always() && steps.decide.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: eval-results/
+
+      - name: Enforce the gate
+        if: steps.decide.outputs.run == 'true'
+        run: |
+          echo "Gate: $(cat eval-results/gate.txt)"
+          test "$(cat eval-results/gate.txt)" = "passed"

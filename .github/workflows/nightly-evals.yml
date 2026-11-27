@@ -1,0 +1,54 @@
+# Tier 3: every night on main. Each case 3x to surface flaky behaviour and silent model drift
+# (providers update models under the same name). 5 trials per case. Opens an issue when the gate fails.
+name: nightly-evals
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      AI_PROVIDER: anthropic
+      ANTHROPIC_MODEL: claude-haiku-5-5
+      JUDGE_PROVIDER: anthropic
+      JUDGE_MODEL: claude-sonnet-5-5
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      TRIALS: '5'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Run eval suite x3
+        id: evals
+        continue-on-error: true
+        run: ./run-evals.sh
+      - run: cat eval-results/summary.md >> "$GITHUB_STEP_SUMMARY"
+        if: always()
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-eval-results
+          path: eval-results/
+          retention-days: 90   # your eval history: compare scores week over week
+      - name: Open an issue on failure
+        if: steps.evals.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create --title "Nightly AI evals failed ($(date -u +%F))" \
+            --label ai-evals --body-file eval-results/summary.md || \
+          gh issue create --title "Nightly AI evals failed ($(date -u +%F))" --body-file eval-results/summary.md
+      - name: Fail the run
+        if: steps.evals.outcome == 'failure'
+        run: exit 1

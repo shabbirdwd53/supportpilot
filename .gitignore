@@ -1,0 +1,6 @@
+target/
+eval-results/
+data/
+.idea/
+*.iml
+.DS_Store
