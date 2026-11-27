@@ -42,7 +42,7 @@ management:
 
 supportpilot:
   # THE line a prompt pull request changes. CI evaluates whatever is set here.
-  prompt-version: ${PROMPT_VERSION:v2}
+  prompt-version: ${PROMPT_VERSION:v3}
   guardrails:
     max-input-chars: 4000
     canary: ${GUARDRAIL_CANARY:SP-CANARY-7f3a91}
