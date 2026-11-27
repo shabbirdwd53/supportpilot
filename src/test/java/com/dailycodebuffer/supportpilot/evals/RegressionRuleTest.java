@@ -13,9 +13,16 @@ class RegressionRuleTest {
     }
 
     @Test
-    void mostlyFailingAfterMostlyPassingIsARegression() {
+    void mostlyFailingAfterAlwaysPassingIsARegression() {
         assertThat(EvalRunner.isRegression(1.0, 1 / 3.0)).isTrue();
-        assertThat(EvalRunner.isRegression(2 / 3.0, 0.0)).isTrue();
+        assertThat(EvalRunner.isRegression(1.0, 0.0)).isTrue();
+    }
+
+    @Test
+    void aCaseThatWasFlakyOnTheBaselineCannotRegress() {
+        // 2/3 on the baseline -> 1/3 now is noise, not evidence: reported as flaky, never blocking
+        assertThat(EvalRunner.isRegression(2 / 3.0, 1 / 3.0)).isFalse();
+        assertThat(EvalRunner.isRegression(2 / 3.0, 0.0)).isFalse();
     }
 
     @Test

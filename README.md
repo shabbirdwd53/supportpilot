@@ -80,7 +80,7 @@ Outputs: `eval-results/summary.md` (the PR comment), `eval-results/results.json`
 | `first_pass_compliance` | 85% | How often the model was right *without* a guardrail stepping in |
 | `reply_quality` | 80% | LLM judge score ≥ 4/5 |
 | p95 latency | ≤ 20 s | |
-| regressions | none | A case that mostly passed on the baseline and now mostly fails blocks the merge |
+| regressions | none | A case that passed in every baseline trial and now mostly fails blocks the merge (cases already flaky on the baseline are reported, not blocking) |
 
 ## Set up the pipeline on GitHub
 

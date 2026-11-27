@@ -44,7 +44,7 @@ public final class MarkdownReport {
                 .append(" | |\n");
 
         if (!regressions.isEmpty()) {
-            md.append("\n### 🔻 Regressions (mostly passed on baseline, mostly fail now)\n");
+            md.append("\n### 🔻 Regressions (always passed on baseline, mostly fail now)\n");
             regressions.forEach(id -> md.append("- `").append(id).append("`\n"));
         }
         if (!fixed.isEmpty()) {

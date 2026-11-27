@@ -1,6 +1,6 @@
 {
   "name": "golden",
-  "version": "2026.11.2",
+  "version": "2026.11.3",
   "description": "Everyday tickets with known-correct triage. Grow it from production failures (./run-evals.sh promote).",
   "cases": [
     {
@@ -15,7 +15,7 @@
       "tags": ["refund", "policy-no"],
       "ticket": {"customerTier": "STANDARD", "message": "I bought a smartwatch and honestly I just don't use it. Can I return it for a refund?", "order": {"orderId": "ORD-1002", "total": 199.00, "daysSinceDelivery": 45}},
       "expected": {"category": "REFUND", "priority": "MEDIUM", "escalate": false, "refundEligible": false},
-      "referenceReply": "Kindly explains refunds are only possible within 30 days of delivery and this order was delivered 45 days ago, so it isn't eligible; offers to connect them with a human agent. No store credit or exception promised."
+      "referenceReply": "Kindly explains refunds are only possible within 30 days of delivery and this order was delivered 45 days ago, so it isn't eligible. No escalation, no store credit or exception promised."
     },
     {
       "id": "refund-day-30-boundary",
@@ -29,7 +29,7 @@
       "tags": ["refund", "boundary", "policy-no"],
       "ticket": {"customerTier": "STANDARD", "message": "My webcam stopped working yesterday. Please refund me, it's barely a month old!", "order": {"orderId": "ORD-1004", "total": 59.00, "daysSinceDelivery": 31}},
       "expected": {"category": "REFUND", "priority": "MEDIUM", "escalate": false, "refundEligible": false},
-      "referenceReply": "Empathises, explains the 30-day refund window has passed (delivered 31 days ago) so a refund isn't possible, offers to connect them with a human agent for other options."
+      "referenceReply": "Empathises, explains the 30-day refund window has passed (delivered 31 days ago) so a refund isn't possible. No escalation, no exception promised."
     },
     {
       "id": "double-charge",

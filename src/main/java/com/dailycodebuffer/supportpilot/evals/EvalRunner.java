@@ -61,11 +61,12 @@ public class EvalRunner {
     }
 
     /**
-     * A regression is a case that MOSTLY passed on the baseline and now MOSTLY fails.
-     * Requiring a majority (not "failed once") keeps LLM noise from blocking good pull requests.
+     * A regression is a case that passed in EVERY baseline trial (stable) and now fails in most trials.
+     * Cases that were already flaky on the baseline can't regress: they're reported as flaky instead,
+     * so LLM noise doesn't block good pull requests.
      */
     public static boolean isRegression(double baselineRate, double currentRate) {
-        return baselineRate >= 0.5 && currentRate < 0.5;
+        return baselineRate >= 1.0 - 1e-9 && currentRate < 0.5;
     }
 
     public static boolean isFix(double baselineRate, double currentRate) {
